@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FreelanceWebServer.Models.Views;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FreelanceWebServer.Controllers.API
 {
@@ -6,9 +8,19 @@ namespace FreelanceWebServer.Controllers.API
     [ApiController]
     public class OrdersController : ControllerBase
     {
-        public OrdersController()
-        {
+        public OrdersController() { }
 
-        }
+        [HttpGet]
+        public IActionResult Get() => Ok();
+
+        [HttpGet("{id}")]
+        public IActionResult Get(long id) => Ok();
+
+        [Authorize]
+        [HttpPut]
+        public IActionResult Update(OrderViewModel viewModel) => Ok();
+        
+        [Authorize]
+        public IActionResult Delete(long id) => Ok();
     }
 }

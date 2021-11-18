@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FreelanceWebServer.Models.Views.Account;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FreelanceWebServer.Controllers.API
@@ -12,7 +13,7 @@ namespace FreelanceWebServer.Controllers.API
 
         }
 
-        public IActionResult Login()
+        public IActionResult Login([FromBody] LoginViewModel viewModel)
         {
             return Ok();
         }
@@ -23,12 +24,12 @@ namespace FreelanceWebServer.Controllers.API
             return Ok();
         }
 
-        public IActionResult Register()
+        public IActionResult Register([FromBody] RegistrationViewModel viewModel)
         {
             return Ok();
         }
 
-        public IActionResult RefreshToken()
+        public IActionResult RefreshToken([FromBody] string token)
         {
             return Ok();
         }
