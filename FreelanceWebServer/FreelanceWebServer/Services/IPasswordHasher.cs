@@ -1,8 +1,8 @@
 ﻿namespace FreelanceWebServer.Services
 {
-    interface IPasswordHasher
+    public interface IPasswordHasher
     {
-        string Hash();
-        string Verify(string password, string hashedPassword);
+        string Hash(string password);
+        bool Verify(string password, string hashedPassword);
     }
 }

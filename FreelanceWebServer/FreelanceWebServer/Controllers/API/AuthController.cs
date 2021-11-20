@@ -1,6 +1,8 @@
 ﻿using FreelanceWebServer.Models;
 using FreelanceWebServer.Models.DTO.Account;
+using FreelanceWebServer.Repositories;
 using FreelanceWebServer.Services;
+using FreelanceWebServer.Services.JWT;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,8 +17,24 @@ namespace FreelanceWebServer.Controllers.API
     public class AuthController : ControllerBase
     {
         private IAccountService _accountService;
+        private IUserRepository _userRepository;
+        private AccessTokenGenerator _accessTokenGenerator;
+        private RefreshTokenGenerator _refreshTokenGenerator;
+        private RefreshTokenValidator _refreshTokenValidator;
 
-        public AuthController(IAccountService accountService) => _accountService = accountService;
+        public AuthController(
+            IAccountService accountService,
+            IUserRepository userRepository,
+            AccessTokenGenerator accessTokenGenerator,
+            RefreshTokenGenerator refreshTokenGenerator,
+            RefreshTokenValidator refreshTokenValidator) 
+        { 
+            _accountService = accountService;
+            _userRepository = userRepository;
+            _accessTokenGenerator = accessTokenGenerator;
+            _refreshTokenGenerator = refreshTokenGenerator;
+            _refreshTokenValidator = refreshTokenValidator;
+        }
 
         /// <summary>
         /// Sign in account
@@ -34,10 +52,13 @@ namespace FreelanceWebServer.Controllers.API
             if(user == null) 
                 return BadRequest("Wrong user credentials");
 
+            user.RefreshToken = _refreshTokenGenerator.Generate();
+            _userRepository.Update(user);
+
             return Ok(new UserTokensDTO 
             { 
-                AccessToken = "valid accessToken",
-                RefreshToken = "valid refreshToken"
+                AccessToken = _accessTokenGenerator.Generate(user),
+                RefreshToken = user.RefreshToken
             });
         }
 
@@ -57,23 +78,47 @@ namespace FreelanceWebServer.Controllers.API
         [HttpPost("register")]
         public IActionResult Register([FromBody] RegistrationDTO model)
         {
+            if (_userRepository.Find(u => u.Username == model.Username || u.PhoneNumber == model.PhoneNumber) != null)
+            {
+                return BadRequest(new { errorMessage = "User with this credentials is already registered" });
+            }
             _accountService.Register(model);
 
             return Ok();
         }
 
         /// <summary>
-        /// Refresh user token
+        /// Refresh user tokens
         /// </summary>
-        /// <param name="token"></param>
+        /// <param name="token">Refresh token</param>
         /// <returns></returns>
         [HttpPost("refresh")]
+        [ProducesResponseType(typeof(UserTokensDTO), StatusCodes.Status200OK)]
         public IActionResult RefreshToken([FromBody] string token)
         {
+            if (token == null)
+                return BadRequest("Wrong refresh token");
+
+            bool isRefreshTokenValid = _refreshTokenValidator.Validate(token);
+            if (!isRefreshTokenValid)
+            {
+                return BadRequest(new { errorMessage = "Invalid refresh token" });
+            }
+
+            var user = _userRepository.Find(u => u.RefreshToken == token);
+
+            if (user == null)
+            {
+                return BadRequest(new { errorMessage = "User with this token not found" });
+            }
+
+            user.RefreshToken = _refreshTokenGenerator.Generate();
+            _userRepository.Update(user);
+
             return Ok(new UserTokensDTO
             {
-                AccessToken = "valid accessToken",
-                RefreshToken = "valid refreshToken"
+                AccessToken = _accessTokenGenerator.Generate(user),
+                RefreshToken = user.RefreshToken
             });
         }
     }

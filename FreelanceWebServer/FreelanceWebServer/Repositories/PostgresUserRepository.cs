@@ -26,7 +26,12 @@ namespace FreelanceWebServer.Repositories
             return new User();
         }
 
-        public IEnumerable<User> Where(Func<User, bool> predicate)
+        public User Find(Func<User, bool> predicate)
+        {
+            return new User();
+        }
+
+        public IEnumerable<User> FindAll(Func<User, bool> predicate)
         {
             return new List<User>();
         }

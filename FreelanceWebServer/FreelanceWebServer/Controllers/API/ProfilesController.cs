@@ -5,9 +5,9 @@ namespace FreelanceWebServer.Controllers.API
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProfileController : ControllerBase
+    public class ProfilesController : ControllerBase
     {
-        public ProfileController() { }
+        public ProfilesController() { }
 
         [Authorize]
         [HttpGet]

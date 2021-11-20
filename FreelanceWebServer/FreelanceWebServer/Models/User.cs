@@ -11,5 +11,9 @@
         public string PhoneNumber { get; set; }
 
         public string HashedPassword { get; set; }
+
+        public long RoleId { get; set; }
+
+        public string RefreshToken { get; set; }
     }
 }
