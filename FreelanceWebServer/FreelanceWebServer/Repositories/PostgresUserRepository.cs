@@ -1,18 +1,19 @@
 ﻿using FreelanceWebServer.Models;
 using System.Collections.Generic;
-using FreelanceWebServer.Databases.PostgreSQL;
+using FreelanceWebServer.Data.PostgreSQL;
+using System;
 
 namespace FreelanceWebServer.Repositories
 {
-    public class UserRepository : IRepository<User>
+    public class PostgresUserRepository : IUserRepository
     {
-        private readonly PostgreSQLContext _context;
+        private readonly PostgresDBContext _context;
 
-        public UserRepository(PostgreSQLContext context) => _context = context;
+        public PostgresUserRepository(PostgresDBContext context) => _context = context;
 
         public void Add(User item)
         {
-            
+            return;
         }
 
         public IEnumerable<User> GetAll()
@@ -25,19 +26,19 @@ namespace FreelanceWebServer.Repositories
             return new User();
         }
 
-        public IEnumerable<User> Where()
+        public IEnumerable<User> Where(Func<User, bool> predicate)
         {
-            return GetAll();
+            return new List<User>();
         }
 
         public void Update(User item)
         {
-            
+            return;
         }
 
         public void Delete(User item)
         {
-            
+            return;
         }
     }
 }

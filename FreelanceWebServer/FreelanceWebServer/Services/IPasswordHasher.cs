@@ -1,4 +1,4 @@
-﻿namespace FreelanceWebServer.Services.PasswordHashers
+﻿namespace FreelanceWebServer.Services
 {
     interface IPasswordHasher
     {

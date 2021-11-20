@@ -1,6 +1,6 @@
-﻿namespace FreelanceWebServer.Models
+﻿namespace FreelanceWebServer.Models.DTO.Account
 {
-    public class User : BaseModel
+    public class RegistrationDTO
     {
         public string Username { get; set; }
 
@@ -10,6 +10,6 @@
 
         public string PhoneNumber { get; set; }
 
-        public string HashedPassword { get; set; }
+        public string Password { get; set; }
     }
 }

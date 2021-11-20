@@ -1,4 +1,4 @@
-﻿namespace FreelanceWebServer.Services.TokenValidators.JWT
+﻿namespace FreelanceWebServer.Services.JWT
 {
     public class RefreshTokenValidator
     {

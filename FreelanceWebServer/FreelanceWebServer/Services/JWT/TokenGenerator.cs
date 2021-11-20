@@ -1,4 +1,4 @@
-﻿namespace FreelanceWebServer.Services.TokenGenerators.JWT
+﻿namespace FreelanceWebServer.Services.JWT
 {
     public class TokenGenerator
     {

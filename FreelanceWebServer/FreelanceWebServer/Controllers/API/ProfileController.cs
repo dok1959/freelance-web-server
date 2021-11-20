@@ -7,34 +7,21 @@ namespace FreelanceWebServer.Controllers.API
     [ApiController]
     public class ProfileController : ControllerBase
     {
-        public ProfileController()
-        {
-
-        }
+        public ProfileController() { }
 
         [Authorize]
-        public IActionResult Get()
-        {
-            return Ok();
-        }
+        [HttpGet]
+        public IActionResult Get() => Ok();
 
         [HttpGet("{id}")]
-        public IActionResult Get(string id)
-        {
-            return Ok();
-        }
+        public IActionResult Get(string id) => Ok();
 
         [Authorize]
-        public IActionResult Update()
-        {
-            return Ok();
-        }
+        [HttpPut]
+        public IActionResult Update() => Ok();
 
         [Authorize]
-        public IActionResult Delete()
-        {
-            return Ok();
-        }
-
+        [HttpDelete("{id}")]
+        public IActionResult Delete(long id) => Ok();
     }
 }
