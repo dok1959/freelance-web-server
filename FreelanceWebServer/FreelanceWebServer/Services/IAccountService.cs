@@ -5,7 +5,7 @@ namespace FreelanceWebServer.Services
 {
     public interface IAccountService
     {
-        void Register(RegistrationDTO model);
         User Authenticate(LoginDTO model);
+        void Register(RegistrationDTO model, long roleId);
     }
 }

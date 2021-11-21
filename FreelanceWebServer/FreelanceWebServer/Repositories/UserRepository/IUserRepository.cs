@@ -1,6 +1,6 @@
-﻿using FreelanceWebServer.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using FreelanceWebServer.Models;
 
 namespace FreelanceWebServer.Repositories
 {

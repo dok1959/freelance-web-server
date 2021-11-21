@@ -47,6 +47,8 @@ namespace FreelanceWebServer
             });
 
             services.AddSingleton<IUserRepository, MemoryUserRepository>();
+            services.AddSingleton<IOrderRepository, MemoryOrderRepository>();
+
             services.AddTransient<IAccountService, AccountService>();
             services.AddTransient<IPasswordHasher, BcryptPasswordHasher>();
 

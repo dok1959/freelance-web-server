@@ -1,11 +1,11 @@
-﻿using FreelanceWebServer.Models;
-using FreelanceWebServer.Models.DTO.Account;
-using FreelanceWebServer.Repositories;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+using FreelanceWebServer.Models;
 using FreelanceWebServer.Services;
 using FreelanceWebServer.Services.JWT;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using FreelanceWebServer.Repositories;
+using FreelanceWebServer.Models.DTO.Account;
 
 namespace FreelanceWebServer.Controllers.API
 {
@@ -18,6 +18,7 @@ namespace FreelanceWebServer.Controllers.API
     {
         private IAccountService _accountService;
         private IUserRepository _userRepository;
+        private IRoleRepository _roleRepository;
         private AccessTokenGenerator _accessTokenGenerator;
         private RefreshTokenGenerator _refreshTokenGenerator;
         private RefreshTokenValidator _refreshTokenValidator;
@@ -25,12 +26,14 @@ namespace FreelanceWebServer.Controllers.API
         public AuthController(
             IAccountService accountService,
             IUserRepository userRepository,
+            IRoleRepository roleRepository,
             AccessTokenGenerator accessTokenGenerator,
             RefreshTokenGenerator refreshTokenGenerator,
             RefreshTokenValidator refreshTokenValidator) 
         { 
             _accountService = accountService;
             _userRepository = userRepository;
+            _roleRepository = roleRepository;
             _accessTokenGenerator = accessTokenGenerator;
             _refreshTokenGenerator = refreshTokenGenerator;
             _refreshTokenValidator = refreshTokenValidator;
@@ -79,10 +82,17 @@ namespace FreelanceWebServer.Controllers.API
         public IActionResult Register([FromBody] RegistrationDTO model)
         {
             if (_userRepository.Find(u => u.Username == model.Username || u.PhoneNumber == model.PhoneNumber) != null)
-            {
-                return BadRequest(new { errorMessage = "User with this credentials is already registered" });
-            }
-            _accountService.Register(model);
+                return BadRequest("User with this credentials is already registered");
+
+            Role role = _roleRepository.GetByName(model.RoleName);
+
+            if (role == null)
+                return BadRequest("Wrong role name");
+
+            if (role.Name == "admin" || role.Name == "moderator")
+                return BadRequest("You do not have sufficient permissions for this role");
+
+            _accountService.Register(model, role.Id);
 
             return Ok();
         }

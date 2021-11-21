@@ -2,8 +2,6 @@
 {
     public class UserDTO
     {
-        public long Id { get; set; }
-
         public string Username { get; set; }
 
         public string Surname { get; set; }
@@ -12,7 +10,7 @@
 
         public UserDTO(User user)
         {
-            Id = user.Id;
+            Username = user.Username;
             Surname = user.Surname;
             Name = user.Name;
         }

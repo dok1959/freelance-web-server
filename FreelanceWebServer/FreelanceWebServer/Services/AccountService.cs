@@ -8,7 +8,9 @@ namespace FreelanceWebServer.Services
     {
         private IUserRepository _userRepository;
         private IPasswordHasher _passwordHasher;
-        public AccountService(IUserRepository userRepository, IPasswordHasher passwordHasher)
+
+        public AccountService(
+            IUserRepository userRepository,IPasswordHasher passwordHasher)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
@@ -26,7 +28,7 @@ namespace FreelanceWebServer.Services
             return user;
         }
 
-        public void Register(RegistrationDTO model)
+        public void Register(RegistrationDTO model, long roleId)
         {
             User user = new User
             {
@@ -34,7 +36,8 @@ namespace FreelanceWebServer.Services
                 Surname = model.Surname,
                 Name = model.Name,
                 PhoneNumber = model.PhoneNumber,
-                HashedPassword = _passwordHasher.Hash(model.Password)
+                RoleId = roleId,
+                HashedPassword = _passwordHasher.Hash(model.Password),
             };
             _userRepository.Add(user);
         }

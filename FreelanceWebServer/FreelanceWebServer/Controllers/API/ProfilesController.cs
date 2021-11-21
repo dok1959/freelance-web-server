@@ -18,7 +18,7 @@ namespace FreelanceWebServer.Controllers.API
 
         [Authorize]
         [HttpPut]
-        public IActionResult Update() => Ok();
+        public IActionResult Put() => Ok();
 
         [Authorize]
         [HttpDelete("{id}")]
