@@ -18,7 +18,7 @@ namespace FreelanceWebServer.Services
 
         public User Authenticate(LoginDTO model)
         {
-            User user = _userRepository.Find(u => u.Username == model.Username || u.PhoneNumber == model.PhoneNumber);
+            User user = _userRepository.Find(u => u.Username == model?.Username || u.PhoneNumber == model?.PhoneNumber);
 
             if(user == null || !_passwordHasher.Verify(model.Password, user.HashedPassword))
             {
@@ -28,7 +28,7 @@ namespace FreelanceWebServer.Services
             return user;
         }
 
-        public void Register(RegistrationDTO model, long roleId)
+        public void Register(RegistrationDTO model)
         {
             User user = new User
             {
@@ -36,7 +36,6 @@ namespace FreelanceWebServer.Services
                 Surname = model.Surname,
                 Name = model.Name,
                 PhoneNumber = model.PhoneNumber,
-                RoleId = roleId,
                 HashedPassword = _passwordHasher.Hash(model.Password),
             };
             _userRepository.Add(user);

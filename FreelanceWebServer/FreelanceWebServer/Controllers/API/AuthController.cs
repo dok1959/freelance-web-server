@@ -81,18 +81,18 @@ namespace FreelanceWebServer.Controllers.API
         [HttpPost("register")]
         public IActionResult Register([FromBody] RegistrationDTO model)
         {
-            if (_userRepository.Find(u => u.Username == model.Username || u.PhoneNumber == model.PhoneNumber) != null)
+            if (_userRepository.Find(u => u.Username == model?.Username || u.PhoneNumber == model?.PhoneNumber) != null)
                 return BadRequest("User with this credentials is already registered");
 
-            Role role = _roleRepository.GetByName(model.RoleName);
+            //Role role = _roleRepository.GetByName(model.RoleName);
 
-            if (role == null)
+            /*if (role == null)
                 return BadRequest("Wrong role name");
 
             if (role.Name == "admin" || role.Name == "moderator")
-                return BadRequest("You do not have sufficient permissions for this role");
+                return BadRequest("You do not have sufficient permissions for this role");*/
 
-            _accountService.Register(model, role.Id);
+            _accountService.Register(model);
 
             return Ok();
         }
