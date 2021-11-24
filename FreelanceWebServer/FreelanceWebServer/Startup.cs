@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,7 +49,6 @@ namespace FreelanceWebServer
 
             services.AddSingleton<IUserRepository, MemoryUserRepository>();
             services.AddSingleton<IOrderRepository, MemoryOrderRepository>();
-            services.AddSingleton<IRoleRepository, MemoryRoleRepository>();
 
             services.AddTransient<IAccountService, AccountService>();
             services.AddTransient<IPasswordHasher, BcryptPasswordHasher>();
@@ -67,6 +67,8 @@ namespace FreelanceWebServer
 
                 c.IncludeXmlComments(commentsFile);
             });
+
+            services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
             services.AddControllers();
         }
