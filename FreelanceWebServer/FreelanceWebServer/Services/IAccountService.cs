@@ -7,5 +7,7 @@ namespace FreelanceWebServer.Services
     {
         User Authenticate(LoginDTO model);
         void Register(RegistrationDTO model);
+        void ResetPassword(string password);
+        bool TryVerifyPhoneNumber(string code);
     }
 }
