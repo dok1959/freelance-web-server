@@ -12,7 +12,7 @@
 
         public string HashedPassword { get; set; }
 
-        public long RoleId { get; set; }
+        public Role Role { get; set; }
 
         public string RefreshToken { get; set; }
     }

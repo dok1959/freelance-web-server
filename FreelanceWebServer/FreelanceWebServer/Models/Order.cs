@@ -4,6 +4,8 @@
     {
         public string Title { get; set; }
 
-        public string Author { get; set; }
+        public long CustomerId { get; set; }
+
+        public long EmployeeId { get; set; }
     }
 }
