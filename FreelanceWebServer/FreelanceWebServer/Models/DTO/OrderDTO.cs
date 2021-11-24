@@ -6,13 +6,8 @@
 
         public string Title { get; set; }
 
-        public string Author { get; set; }
+        public string Customer { get; set; }
 
-        public OrderDTO(Order order)
-        {
-            Id = order.Id;
-            Title = order.Title;
-            Author = order.Author;
-        }
+        public string Employee { get; set; }
     }
 }

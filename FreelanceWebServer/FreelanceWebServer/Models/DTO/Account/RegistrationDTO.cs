@@ -1,4 +1,6 @@
-﻿namespace FreelanceWebServer.Models.DTO.Account
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace FreelanceWebServer.Models.DTO.Account
 {
     public class RegistrationDTO
     {
@@ -8,10 +10,10 @@
 
         public string Name { get; set; }
 
+        [Phone]
         public string PhoneNumber { get; set; }
 
+        [Required]
         public string Password { get; set; }
-
-        public string RoleName { get; set; }
     }
 }
