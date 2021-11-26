@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
-using FreelanceWebServer.Models.DTO;
 using FreelanceWebServer.Repositories;
 using FreelanceWebServer.Models;
+using FreelanceWebServer.Models.DTO.Market.Order;
+using System.Threading.Tasks;
 
 namespace FreelanceWebServer.Controllers
 {
@@ -15,56 +16,95 @@ namespace FreelanceWebServer.Controllers
     {
         IMapper _mapper;
         IOrderRepository _orderRepository;
+        IUserRepository _userRepository;
 
-        public OrdersController(IMapper mapper, IOrderRepository orderRepository)
+        public OrdersController(IMapper mapper, IOrderRepository orderRepository, IUserRepository userRepository)
         {
             _mapper = mapper;
             _orderRepository = orderRepository;
+            _userRepository = userRepository;
         }
 
         /// <summary>
         /// Get all orders
         /// </summary>
-        /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<OrderDTO>), StatusCodes.Status200OK)]
-        public IActionResult Get()
+        [ProducesResponseType(typeof(IEnumerable<ShowOrderDTO>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Get()
         {
-            var orders = _orderRepository.GetAll();
-            var ordersDTO = _mapper.Map<IEnumerable<OrderDTO>>(orders);
+            var showOrdersDTO = new List<ShowOrderDTO>();
 
-            return Ok(ordersDTO);
+            foreach(var order in _orderRepository.GetAll())
+            {
+                var customer = _userRepository.GetById(order.CustomerId);
+                var employee = _userRepository.GetById(order.CustomerId);
+
+                var showOrderDTO = new ShowOrderDTO
+                {
+                    Id = order.Id,
+                    Title = order.Title,
+                    CustomerId = order.CustomerId,
+                    Customer = $"{customer.Surname} {customer.Name}",
+                    EmployeeId = order.EmployeeId,
+                    Employee = $"{employee.Surname} {employee.Name}"
+                };
+
+                showOrdersDTO.Add(showOrderDTO);
+            }
+
+            return Ok(showOrdersDTO);
         }
 
         /// <summary>
         /// Get order by id
         /// </summary>
         /// <param name="id">Order id</param>
-        /// <returns></returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(OrderDTO), StatusCodes.Status200OK)]
-        public IActionResult Get(long id) 
+        [ProducesResponseType(typeof(ShowOrderDTO), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Get(long id) 
         {
             Order order = _orderRepository.GetById(id);
 
             if (order == null)
                 return BadRequest("Order with this id not found in database");
 
-            var orderDTO = _mapper.Map<OrderDTO>(order);
+            var customer = _userRepository.GetById(order.CustomerId);
+            var employee = _userRepository.GetById(order.CustomerId);
 
-            return Ok(orderDTO);
+            var showOrderDTO = new ShowOrderDTO
+            {
+                Id = order.Id,
+                Title = order.Title,
+                CustomerId = order.CustomerId,
+                Customer = $"{customer.Surname} {customer.Name}",
+                EmployeeId = order.EmployeeId,
+                Employee = $"{employee.Surname} {employee.Name}"
+            };
+
+            return Ok(showOrderDTO);
         }
 
         /// <summary>
         /// Add order
         /// </summary>
-        /// <param name="model">Order DTO</param>
-        /// <returns></returns>
+        /// <param name="model">CreateOrder DTO</param>
         //[Authorize]
         [HttpPost]
-        public IActionResult Post([FromBody] OrderDTO model)
+        public async Task<IActionResult> Post([FromBody] CreateOrderDTO model)
         {
-            var order = _mapper.Map<Order>(model);
+            var customer = _userRepository.GetById(model.CustomerId);
+            var employee = _userRepository.GetById(model.EmployeeId);
+
+            if (customer == null || employee == null)
+                return BadRequest("Customer or Employee id was not correct");
+
+            var order = new Order
+            {
+                Title = model.Title,
+                CustomerId = model.CustomerId,
+                EmployeeId = model.EmployeeId
+            };
+
             _orderRepository.Add(order);
 
             return Ok();
@@ -73,13 +113,19 @@ namespace FreelanceWebServer.Controllers
         /// <summary>
         /// Update order
         /// </summary>
-        /// <param name="model">Order DTO</param>
-        /// <returns></returns>
+        /// <param name="model">UpdateOrder DTO</param>
         //[Authorize]
         [HttpPut]
-        public IActionResult Put([FromBody] OrderDTO model)
+        public async Task<IActionResult> Put([FromBody] UpdateOrderDTO model)
         {
-            var order = _mapper.Map<Order>(model);
+            var order = new Order
+            {
+                Id = model.Id,
+                Title = model.Title,
+                CustomerId = model.CustomerId,
+                EmployeeId = model.EmployeeId
+            };
+
             _orderRepository.Update(order);
 
             return Ok();
@@ -89,10 +135,9 @@ namespace FreelanceWebServer.Controllers
         /// Delete order
         /// </summary>
         /// <param name="id">Order id</param>
-        /// <returns></returns>
         //[Authorize]
         [HttpDelete("{id}")]
-        public IActionResult Delete(long id)
+        public async Task<IActionResult> Delete(long id)
         {
             _orderRepository.DeleteById(id);
 
