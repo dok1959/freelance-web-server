@@ -1,7 +1,8 @@
-﻿using FreelanceWebServer.Models;
+﻿using System;
 using System.Collections.Generic;
+using Dapper;
+using FreelanceWebServer.Models;
 using FreelanceWebServer.Data.PostgreSQL;
-using System;
 
 namespace FreelanceWebServer.Repositories
 {
@@ -11,14 +12,22 @@ namespace FreelanceWebServer.Repositories
 
         public PostgresUserRepository(PostgresDBContext context) => _context = context;
 
-        public void Add(User item)
+        public void Add(User user)
         {
-            return;
+            _context.GetConnection().Execute(
+                "INSERT INTO \"Users\" (username, surname, name, phoneNumber) Values (@Username, @Surname, @Name, @PhoneNumber);",
+                new
+                {
+                    Username = user.Username,
+                    Surname = user.Surname,
+                    Name = user.Name,
+                    PhoneNumber = user.PhoneNumber
+                });
         }
 
         public IEnumerable<User> GetAll()
         {
-            return new List<User>();
+            return _context.GetConnection().Query<User>("SELECT * FROM \"Users\";");
         }
 
         public User GetById(long id)
