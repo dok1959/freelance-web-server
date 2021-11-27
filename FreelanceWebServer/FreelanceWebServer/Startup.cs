@@ -15,6 +15,7 @@ using FreelanceWebServer.Repositories;
 using FreelanceWebServer.Services;
 using FreelanceWebServer.Services.JWT;
 using FreelanceWebServer.Data.PostgreSQL;
+using FreelanceWebServer.Repositories.OrderRepository;
 
 namespace FreelanceWebServer
 {
@@ -48,9 +49,10 @@ namespace FreelanceWebServer
                 };
             });
 
-            services.AddTransient<IUserRepository, PostgresUserRepository>();
-            services.AddSingleton<IOrderRepository, MemoryOrderRepository>();
             services.AddSingleton<PostgresDBContext>();
+
+            services.AddTransient<IUserRepository, PostgresUserRepository>();
+            services.AddTransient<IOrderRepository, PostgresOrderRepository>();
 
             services.AddTransient<IAccountService, AccountService>();
             services.AddTransient<IPasswordHasher, BcryptPasswordHasher>();
