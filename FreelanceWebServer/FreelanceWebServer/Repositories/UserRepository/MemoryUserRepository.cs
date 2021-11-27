@@ -1,6 +1,6 @@
-﻿using System;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Linq;
 using FreelanceWebServer.Models;
 
 namespace FreelanceWebServer.Repositories
@@ -11,26 +11,46 @@ namespace FreelanceWebServer.Repositories
 
         private long _idCounter = 1;
 
-        public void Add(User user)
+        public Task Add(User user)
         {
             user.Id = _idCounter++;
             _users.Add(user);
+
+            return Task.CompletedTask;
         }
 
-        public IEnumerable<User> GetAll() => _users.ToList();
+        public async Task<IEnumerable<User>> GetAll() 
+            => await Task.FromResult(_users.ToList());
 
-        public User GetById(long id) => _users.ToList().Find(u => u.Id.Equals(id));
+        public async Task<User> Get(long id) 
+            => await Task.FromResult(_users.ToList().Find(u => u.Id.Equals(id)));
 
-        public User Find(Func<User, bool> predicate) => _users.Find(new Predicate<User>(predicate));
+        public async Task<User> GetByUsername(string username) 
+            => await Task.FromResult(_users.Find(u => u.Username == username));
 
-        public IEnumerable<User> FindAll(Func<User, bool> predicate) => _users.Where(predicate).ToList();
+        public async Task<User> GetByPhoneNumber(string phoneNumber) 
+            => await Task.FromResult(_users.Find(u => u.PhoneNumber == phoneNumber));
 
-        public void Update(User user)
+        public async Task<User> GetByRefreshToken(string token) 
+            => await Task.FromResult(_users.Find(u => u.RefreshToken == token));
+
+        public Task Update(User user)
         {
             _users.RemoveAll(u => u.Id.Equals(user.Id));
             _users.Add(user);
+
+            return Task.CompletedTask;
         }
 
-        public void Delete(User user) => _users.RemoveAll(u => u.Id.Equals(user.Id));
+        public Task UpdateRefreshToken(long id, string token)
+        {
+            var user = _users.Find(u => u.Id.Equals(id));
+            user.RefreshToken = token;
+
+            return Task.CompletedTask;
+        }
+
+        public async Task Delete(long id) 
+            => await Task.FromResult(_users.RemoveAll(u => u.Id.Equals(id)));
     }
 }

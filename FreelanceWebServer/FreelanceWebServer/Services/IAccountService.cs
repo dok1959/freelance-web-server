@@ -1,13 +1,14 @@
-﻿using FreelanceWebServer.Models;
+﻿using System.Threading.Tasks;
+using FreelanceWebServer.Models;
 using FreelanceWebServer.Models.DTO.Account;
 
 namespace FreelanceWebServer.Services
 {
     public interface IAccountService
     {
-        User Authenticate(LoginDTO model);
-        void Register(RegistrationDTO model);
-        void ResetPassword(string password);
-        bool TryVerifyPhoneNumber(string code);
+        Task<User> Authenticate(LoginDTO model);
+        Task Register(RegistrationDTO model);
+        Task ResetPassword(string password);
+        Task<bool> TryVerifyPhoneNumber(string code);
     }
 }

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Linq;
 using FreelanceWebServer.Models;
 
 namespace FreelanceWebServer.Repositories
@@ -10,24 +10,29 @@ namespace FreelanceWebServer.Repositories
         private readonly List<Order> _orders = new List<Order>();
         private long _idCounter = 1;
 
-        public void Add(Order order)
+        public Task Add(Order order)
         {
             order.Id = _idCounter++;
             _orders.Add(order);
+
+            return Task.CompletedTask;
         }
 
-        public IEnumerable<Order> GetAll() => _orders.ToList();
+        public async Task<IEnumerable<Order>> GetAll() 
+            => await Task.FromResult(_orders.ToList());
 
-        public Order GetById(long id) => _orders.Find(o => o.Id.Equals(id));
+        public async Task<Order> Get(long id) 
+            => await Task.FromResult(_orders.Find(o => o.Id.Equals(id)));
 
-        public IEnumerable<Order> FindAll(Func<Order, bool> predicate) => _orders.Where(predicate);
-
-        public void Update(Order order)
+        public Task Update(Order order)
         {
             _orders.RemoveAll(o => o.Id.Equals(order.Id));
             _orders.Add(order);
+
+            return Task.CompletedTask;
         }
 
-        public void DeleteById(long id) => _orders.RemoveAll(o => o.Id.Equals(id));
+        public async Task Delete(long id) 
+            => await Task.FromResult(_orders.RemoveAll(o => o.Id.Equals(id)));
     }
 }

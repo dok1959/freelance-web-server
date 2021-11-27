@@ -2,6 +2,7 @@
 using FreelanceWebServer.Models;
 using FreelanceWebServer.Repositories;
 using FreelanceWebServer.Models.DTO.Account;
+using System.Threading.Tasks;
 
 namespace FreelanceWebServer.Services
 {
@@ -21,9 +22,18 @@ namespace FreelanceWebServer.Services
             _passwordHasher = passwordHasher;
         }
 
-        public User Authenticate(LoginDTO model)
+        public async Task<User> Authenticate(LoginDTO model)
         {
-            User user = _userRepository.Find(u => u.Username == model?.Username || u.PhoneNumber == model?.PhoneNumber);
+            User user = null;
+
+            if (model.Username != null)
+            {
+                user = await _userRepository.GetByUsername(model.Username);
+            }
+            else if (model.PhoneNumber != null)
+            {
+                user = await _userRepository.GetByPhoneNumber(model.PhoneNumber);
+            }
 
             if(user == null || !_passwordHasher.Verify(model.Password, user.HashedPassword))
                 return null;
@@ -31,15 +41,16 @@ namespace FreelanceWebServer.Services
             return user;
         }
 
-        public void Register(RegistrationDTO model)
+        public async Task Register(RegistrationDTO model)
         {
             var user = _mapper.Map<User>(model);
             user.HashedPassword = _passwordHasher.Hash(model.Password);
-            _userRepository.Add(user);
+            user.Role = Role.User;
+            await _userRepository.Add(user);
         }
 
-        public void ResetPassword(string password) { }
+        public async Task ResetPassword(string password) => await new Task(() => { });
 
-        public bool TryVerifyPhoneNumber(string code) => true;
+        public async Task<bool> TryVerifyPhoneNumber(string code) => await new Task<bool>(() => true);
     }
 }
