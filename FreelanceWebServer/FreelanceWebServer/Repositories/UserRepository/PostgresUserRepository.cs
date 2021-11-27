@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Threading.Tasks;
 using System.Collections.Generic;
 using Dapper;
 using FreelanceWebServer.Models;
@@ -12,47 +12,65 @@ namespace FreelanceWebServer.Repositories
 
         public PostgresUserRepository(PostgresDBContext context) => _context = context;
 
-        public void Add(User user)
+        public async Task Add(User user)
         {
-            _context.GetConnection().Execute(
-                "INSERT INTO \"Users\" (username, surname, name, phoneNumber) Values (@Username, @Surname, @Name, @PhoneNumber);",
-                new
-                {
-                    Username = user.Username,
-                    Surname = user.Surname,
-                    Name = user.Name,
-                    PhoneNumber = user.PhoneNumber
-                });
+            var connection = await _context.GetFreeConnection();
+            await connection.ExecuteAsync(
+                "INSERT INTO \"users\" (username, surname, name, phone_number, hashed_password, role) " +
+                "VALUES (@Username, @Surname, @Name, @PhoneNumber, @HashedPassword, @Role);", user);
         }
 
-        public IEnumerable<User> GetAll()
+        public async Task<IEnumerable<User>> GetAll()
         {
-            return _context.GetConnection().Query<User>("SELECT * FROM \"Users\";");
+            var connection = await _context.GetFreeConnection();
+            return await connection.QueryAsync<User>("SELECT * FROM \"users\";");
         }
 
-        public User GetById(long id)
+        public async Task<User> Get(long id)
         {
-            return new User();
+            var connection = await _context.GetFreeConnection();
+            return await connection.QueryFirstOrDefaultAsync<User>("SELECT * FROM \"users\" WHERE id = @id;", new { id = id });
         }
 
-        public User Find(Func<User, bool> predicate)
+        public async Task<User> GetByUsername(string username)
         {
-            return new User();
+            var connection = await _context.GetFreeConnection();
+            return await connection.QueryFirstOrDefaultAsync<User>("SELECT * FROM \"users\" WHERE username = @username;", new { username = username });
         }
 
-        public IEnumerable<User> FindAll(Func<User, bool> predicate)
+        public async Task<User> GetByPhoneNumber(string phoneNumber)
         {
-            return new List<User>();
+            var connection = await _context.GetFreeConnection();
+            return await connection.QueryFirstOrDefaultAsync<User>("SELECT * FROM \"users\" WHERE phone_number = @phoneNumber;", new { phoneNumber = phoneNumber });
         }
 
-        public void Update(User item)
+        public async Task<User> GetByRefreshToken(string token)
         {
-            return;
+            var connection = await _context.GetFreeConnection();
+            return await connection.QueryFirstOrDefaultAsync<User>("SELECT * FROM \"users\" WHERE refresh_token = @token;", new { token = token });
         }
 
-        public void Delete(User item)
+        public async Task Update(User user)
         {
-            return;
+            var connection = await _context.GetFreeConnection();
+            await connection.ExecuteAsync(
+                "UPDATE * FROM \"users\" " +
+                "SET username = @Username, surname = @Surname, name = @Name, phone_number = @PhoneNumber " +
+                "WHERE id = @Id;", user);
+        }
+
+        public async Task UpdateRefreshToken(long id, string token)
+        {
+            var connection = await _context.GetFreeConnection();
+            await connection.ExecuteAsync(
+                "UPDATE \"users\" SET refresh_token = @token " +
+                "WHERE id = @id;", new { id = id, token = token });
+        }
+
+        public async Task Delete(long id)
+        {
+            var connection = await _context.GetFreeConnection();
+            await connection.ExecuteAsync("DELETE FROM \"users\" WHERE id = @id;", new { id = id });
         }
     }
 }

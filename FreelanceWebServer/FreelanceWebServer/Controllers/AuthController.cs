@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using FreelanceWebServer.Models;
 using FreelanceWebServer.Services;
@@ -44,23 +45,23 @@ namespace FreelanceWebServer.Controllers
         /// <returns></returns>
         [HttpPost("login")]
         [ProducesResponseType(typeof(UserTokensDTO), StatusCodes.Status200OK)]
-        public IActionResult Login([FromBody] LoginDTO model)
+        public async Task<IActionResult> Login([FromBody] LoginDTO model)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Login DTO not valid");
 
-            User user = _accountService.Authenticate(model);
+            User user = await _accountService.Authenticate(model);
 
             if(user == null)
                 return BadRequest("Wrong user credentials");
 
-            user.RefreshToken = _refreshTokenGenerator.Generate();
-            _userRepository.Update(user);
+            var generatedToken = _refreshTokenGenerator.Generate();
+            await _userRepository.UpdateRefreshToken(user.Id, generatedToken);
 
             return Ok(new UserTokensDTO 
             { 
                 AccessToken = _accessTokenGenerator.Generate(user),
-                RefreshToken = user.RefreshToken
+                RefreshToken = generatedToken
             });
         }
 
@@ -70,12 +71,23 @@ namespace FreelanceWebServer.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost("register")]
-        public IActionResult Register([FromBody] RegistrationDTO model)
+        public async Task<IActionResult> Register([FromBody] RegistrationDTO model)
         {
-            if (_userRepository.Find(u => u.Username == model?.Username || u.PhoneNumber == model?.PhoneNumber) != null)
+            User user = null;
+
+            if (model.Username != null)
+            {
+                user = await _userRepository.GetByUsername(model.Username);
+            }
+            else if (model.PhoneNumber != null)
+            {
+                user = await _userRepository.GetByPhoneNumber(model.PhoneNumber);
+            }
+
+            if (user != null)
                 return BadRequest("User with this credentials is already registered");
 
-            _accountService.Register(model);
+            await _accountService.Register(model);
 
             return Ok();
         }
@@ -87,7 +99,7 @@ namespace FreelanceWebServer.Controllers
         /// <returns></returns>
         [HttpPost("refresh")]
         [ProducesResponseType(typeof(UserTokensDTO), StatusCodes.Status200OK)]
-        public IActionResult RefreshToken([FromBody] string token)
+        public async Task<IActionResult> RefreshToken([FromBody] string token)
         {
             if (token == null)
                 return BadRequest("Wrong refresh token");
@@ -98,20 +110,20 @@ namespace FreelanceWebServer.Controllers
                 return BadRequest(new { errorMessage = "Invalid refresh token" });
             }
 
-            var user = _userRepository.Find(u => u.RefreshToken == token);
+            User user = await _userRepository.GetByRefreshToken(token);
 
             if (user == null)
             {
                 return BadRequest(new { errorMessage = "User with this token not found" });
             }
 
-            user.RefreshToken = _refreshTokenGenerator.Generate();
-            _userRepository.Update(user);
+            var generatedToken = _refreshTokenGenerator.Generate();
+            await _userRepository.UpdateRefreshToken(user.Id, generatedToken);
 
             return Ok(new UserTokensDTO
             {
                 AccessToken = _accessTokenGenerator.Generate(user),
-                RefreshToken = user.RefreshToken
+                RefreshToken = generatedToken
             });
         }
     }
