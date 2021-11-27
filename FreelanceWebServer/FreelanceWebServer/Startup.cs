@@ -70,7 +70,7 @@ namespace FreelanceWebServer
                 c.IncludeXmlComments(commentsFile);
             });
 
-            services.AddAutoMapper(Assembly.GetExecutingAssembly());
+            services.AddAutoMapper(typeof(MappingProfile));
 
             services.AddControllers();
         }

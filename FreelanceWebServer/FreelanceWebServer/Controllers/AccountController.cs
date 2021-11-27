@@ -17,7 +17,7 @@ namespace FreelanceWebServer.Controllers
         /// </summary>
         /// <param name="password"></param>
         /// <returns></returns>
-        [HttpPost("reset/password")]
+        [HttpPost("password/reset")]
         [Authorize]
         public IActionResult ResetPassword([FromBody] string password) => Ok();
 
@@ -25,7 +25,7 @@ namespace FreelanceWebServer.Controllers
         /// Send verification code on phone number
         /// </summary>
         /// <returns></returns>
-        [HttpGet("verification/phone")]
+        [HttpGet("phone/sendVerificationCode")]
         [Authorize]
         public IActionResult SendVerificationCodeOnPhone() => Ok();
 
@@ -34,7 +34,7 @@ namespace FreelanceWebServer.Controllers
         /// </summary>
         /// <param name="code">Verification code</param>
         /// <returns></returns>
-        [HttpPut("verification/phone")]
+        [HttpPut("phone/verificate")]
         [Authorize]
         public IActionResult VerifyPhoneNumber([FromBody] string code) => Ok();
     }
