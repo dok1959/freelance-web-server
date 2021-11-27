@@ -1,24 +1,47 @@
 ﻿using System;
-using Npgsql;
 using System.Data;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Npgsql;
 
 namespace FreelanceWebServer.Data.PostgreSQL
 {
     public class PostgresDBContext : IDisposable
     {
-        private NpgsqlConnection _connection;
+        private const int ConnectionsCount = 20;
+        private readonly NpgsqlConnection[] _connectionsPool;
+        private readonly string _connectionString;
 
-        public PostgresDBContext()
+        public PostgresDBContext(IConfiguration configuration)
         {
-            _connection = new NpgsqlConnection("User ID=laqgytasafmwsd;Password=546f1f14cd1613d2efa6792d8acfc18e30fd892aa14409fb534f14360e8a325d;Host=ec2-3-230-26-112.compute-1.amazonaws.com;Port=5432;Database=d368v7dldm6c1n");
-            _connection.Open();
+            _connectionsPool = new NpgsqlConnection[ConnectionsCount];
+            _connectionString = configuration.GetConnectionString("PostgresHerokuConnection");
+            Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
         }
 
-        public IDbConnection GetConnection() => _connection;
+        public async Task<IDbConnection> GetFreeConnection()
+        {
+            for(int i = 0; i < ConnectionsCount; i++)
+            {
+                if(_connectionsPool[i] == null)
+                {
+                    _connectionsPool[i] = new NpgsqlConnection(_connectionString);
+                    await _connectionsPool[i].OpenAsync();
+
+                    return _connectionsPool[i];
+                }
+
+                if (_connectionsPool[i].FullState == ConnectionState.Open)
+                    return _connectionsPool[i];
+            }
+
+            return _connectionsPool[0];
+        }
 
         public void Dispose()
         {
-            _connection.Close();
+            foreach (var connection in _connectionsPool)
+                connection.Close();
         }
     }
 }
