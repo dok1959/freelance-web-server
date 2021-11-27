@@ -1,7 +1,9 @@
 ﻿namespace FreelanceWebServer.Models
 {
-    public class User : BaseModel
+    public class User
     {
+        public long Id { get; set; }
+
         public string Username { get; set; }
 
         public string Surname { get; set; }
