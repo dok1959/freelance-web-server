@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace FreelanceWebServer.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/orders")]
     [ApiController]
     public class OrdersController : ControllerBase
     {

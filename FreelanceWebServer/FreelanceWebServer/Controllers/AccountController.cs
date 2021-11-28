@@ -4,7 +4,7 @@ using FreelanceWebServer.Services;
 
 namespace FreelanceWebServer.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/account")]
     [ApiController]
     public class AccountController : ControllerBase
     {

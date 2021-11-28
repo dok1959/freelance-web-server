@@ -12,7 +12,7 @@ namespace FreelanceWebServer.Controllers
     /// <summary>
     /// Authentication controller
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
