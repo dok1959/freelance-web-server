@@ -27,11 +27,6 @@ namespace FreelanceWebServer
 
         public void ConfigureServices(IServiceCollection services) 
         {
-            services.Configure<RouteOptions>(options =>
-            {
-                options.LowercaseUrls = true;
-            });
-
             var accessTokenConfig = _configuration.GetSection("Authentication");
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
