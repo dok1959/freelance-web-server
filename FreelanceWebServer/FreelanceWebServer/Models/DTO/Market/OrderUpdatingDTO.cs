@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace FreelanceWebServer.Models
+namespace FreelanceWebServer.Models.DTO.Market
 {
-    public class Order
+    public class OrderUpdatingDTO
     {
         [Required]
         public long Id { get; set; }
@@ -15,12 +15,6 @@ namespace FreelanceWebServer.Models
         public string Description { get; set; }
 
         public long? ContractorId { get; set; }
-
-        [Required]
-        public long CustomerId { get; set; }
-
-        [Required]
-        public long InfoId { get; set; }
 
         [Required]
         public decimal Cost { get; set; }

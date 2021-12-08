@@ -1,31 +1,28 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
-namespace FreelanceWebServer.Models
+namespace FreelanceWebServer.Models.DTO.Market
 {
-    public class Order
+    public class OrderShowingDTO
     {
-        [Required]
         public long Id { get; set; }
 
-        [MaxLength(128)]
         public string Title { get; set; }
 
-        [Required]
         public string Description { get; set; }
 
         public long? ContractorId { get; set; }
 
-        [Required]
+        public string ContractorFullName { get; set; }
+
         public long CustomerId { get; set; }
 
-        [Required]
-        public long InfoId { get; set; }
+        public string CustomerFullName { get; set; }
 
-        [Required]
+        public List<object> Info { get; set; }
+
         public decimal Cost { get; set; }
 
-        [Required]
         public DateTime Deadline { get; set; }
 
         public long? SpecialId { get; set; }

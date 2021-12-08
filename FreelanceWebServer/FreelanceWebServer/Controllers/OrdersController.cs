@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
 using FreelanceWebServer.Repositories;
 using FreelanceWebServer.Models;
-using FreelanceWebServer.Models.DTO.Market.Order;
 using System.Threading.Tasks;
+using FreelanceWebServer.Models.DTO.Market;
 
 namespace FreelanceWebServer.Controllers
 {
@@ -29,32 +29,38 @@ namespace FreelanceWebServer.Controllers
         /// Get all orders
         /// </summary>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<ShowOrderDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<OrderShowingDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get()
         {
-            var showOrdersDTO = new List<ShowOrderDTO>();
+            var orderShowingDTOs = new List<OrderShowingDTO>();
 
             var orders = await _orderRepository.GetAll();
 
             foreach (var order in orders)
             {
-                /*var customer = _userRepository.GetById(order.CustomerId);
-                var employee = _userRepository.GetById(order.CustomerId);*/
+                /*var ContractorFullName = _userRepository.GetById(order.CustomerId);
+                var CustomerFullName = _userRepository.GetById(order.CustomerId);*/
 
-                var showOrderDTO = new ShowOrderDTO
+
+                var orderShowingDTO = new OrderShowingDTO
                 {
                     Id = order.Id,
                     Title = order.Title,
+                    Description = order.Description,
+                    ContractorId = order.ContractorId,
+                    //ContractorFullName = $"{employee.Surname} {employee.Name}"
                     CustomerId = order.CustomerId,
-                    //Customer = $"{customer.Surname} {customer.Name}",
-                    EmployeeId = order.EmployeeId,
-                    //Employee = $"{employee.Surname} {employee.Name}"
+                    //CustomerFullName = $"{customer.Surname} {customer.Name}",
+                    Info = new List<object>(),
+                    Cost = order.Cost,
+                    Deadline = order.Deadline,
+                    SpecialId = order.SpecialId
                 };
 
-                showOrdersDTO.Add(showOrderDTO);
+                orderShowingDTOs.Add(orderShowingDTO);
             }
 
-            return Ok(showOrdersDTO);
+            return Ok(orderShowingDTOs);
         }
 
         /// <summary>
@@ -62,7 +68,7 @@ namespace FreelanceWebServer.Controllers
         /// </summary>
         /// <param name="id">Order id</param>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ShowOrderDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(OrderShowingDTO), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(long id) 
         {
             Order order = await _orderRepository.Get(id);
@@ -70,20 +76,25 @@ namespace FreelanceWebServer.Controllers
             if (order == null)
                 return BadRequest("Order with this id not found in database");
 
-            /*var customer = _userRepository.GetById(order.CustomerId);
-            var employee = _userRepository.GetById(order.CustomerId);*/
+            /*var ContractorFullName = _userRepository.GetById(order.CustomerId);
+            var CustomerFullName = _userRepository.GetById(order.CustomerId);*/
 
-            var showOrderDTO = new ShowOrderDTO
+            var orderShowingDTO = new OrderShowingDTO
             {
                 Id = order.Id,
                 Title = order.Title,
+                Description = order.Description,
+                ContractorId = order.ContractorId,
+                //ContractorFullName = $"{employee.Surname} {employee.Name}"
                 CustomerId = order.CustomerId,
-                //Customer = $"{customer.Surname} {customer.Name}",
-                EmployeeId = order.EmployeeId,
-                //Employee = $"{employee.Surname} {employee.Name}"
+                //CustomerFullName = $"{customer.Surname} {customer.Name}",
+                Info = new List<object>(),
+                Cost = order.Cost,
+                Deadline = order.Deadline,
+                SpecialId = order.SpecialId
             };
 
-            return Ok(showOrderDTO);
+            return Ok(orderShowingDTO);
         }
 
         /// <summary>
@@ -92,12 +103,20 @@ namespace FreelanceWebServer.Controllers
         /// <param name="model">CreateOrder DTO</param>
         //[Authorize]
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreateOrderDTO model)
+        public async Task<IActionResult> Post([FromBody] OrderCreatingDTO model)
         {
+            if (!ModelState.IsValid)
+                return BadRequest($"Errors count when validating fileds {ModelState.ErrorCount}");
+
             var order = new Order
             {
                 Title = model.Title,
-                CustomerId = model.CustomerId,
+                Description = model.Description,
+                CustomerId = 0,
+                InfoId = 0,
+                Cost = model.Cost,
+                Deadline = model.Deadline,
+                SpecialId = model.SpecialId,
             };
 
             await _orderRepository.Add(order);
@@ -111,13 +130,17 @@ namespace FreelanceWebServer.Controllers
         /// <param name="model">UpdateOrder DTO</param>
         //[Authorize]
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody] UpdateOrderDTO model)
+        public async Task<IActionResult> Put([FromBody] OrderUpdatingDTO model)
         {
             var order = new Order
             {
                 Id = model.Id,
                 Title = model.Title,
-                EmployeeId = model.EmployeeId
+                Description = model.Description,
+                ContractorId = model.ContractorId,
+                Cost = model.Cost,
+                Deadline = model.Deadline,
+                SpecialId = model.SpecialId,
             };
 
             await _orderRepository.Update(order);
