@@ -16,8 +16,8 @@ namespace FreelanceWebServer.Repositories
         {
             var connection = await _context.GetFreeConnection();
             await connection.ExecuteAsync(
-                "INSERT INTO \"users\" (username, surname, name, phone_number, hashed_password, role) " +
-                "VALUES (@Username, @Surname, @Name, @PhoneNumber, @HashedPassword, @Role);", user);
+                "INSERT INTO \"users\" (username, surname, name, phone_number, hashed_password, role_id) " +
+                "VALUES (@Username, @Surname, @Name, @PhoneNumber, @HashedPassword, @RoleId);", user);
         }
 
         public async Task<IEnumerable<User>> GetAll()

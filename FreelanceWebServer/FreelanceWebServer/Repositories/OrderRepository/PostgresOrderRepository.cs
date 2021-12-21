@@ -15,7 +15,8 @@ namespace FreelanceWebServer.Repositories.OrderRepository
         public async Task Add(Order order)
         {
             var connection = await _context.GetFreeConnection();
-            await connection.ExecuteAsync("INSERT INTO \"orders\" (title, customer_id) VALUES (@Title, @CustomerId);", order);
+            await connection.ExecuteAsync(@"INSERT INTO orders (title, description, cost, customer_id, info_id, deadline, special_id) VALUES
+                (@Title, @Description, @Cost, @CustomerId, @InfoId, @Deadline, @SpecialId);", order);
         }
 
         public async Task<IEnumerable<Order>> GetAll()
@@ -34,9 +35,14 @@ namespace FreelanceWebServer.Repositories.OrderRepository
         public async Task Update(Order order)
         {
             var connection = await _context.GetFreeConnection();
-            await connection.ExecuteAsync(
-                "UPDATE \"orders\" SET title = @Title, employee_id = @EmployeeId " +
-                "WHERE id = @Id;", order);
+            await connection.ExecuteAsync(@"UPDATE orders SET
+                title = @Title,
+                description = @Description,
+                contractor_id = @ContractorId,
+                cost = @Cost,
+                deadline = @Deadline,
+                special_id = @SpecialId
+                WHERE id = @Id;", order);
         }
 
         public async Task Delete(long id)
