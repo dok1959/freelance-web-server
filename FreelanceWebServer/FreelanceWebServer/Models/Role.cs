@@ -1,8 +1,9 @@
 ﻿namespace FreelanceWebServer.Models
 {
-    public enum Role
+    public class Role
     {
-        User = 1,
-        Moderator = 2
+        public long Id { get; set; }
+
+        public string Name { get; set; }
     }
 }
