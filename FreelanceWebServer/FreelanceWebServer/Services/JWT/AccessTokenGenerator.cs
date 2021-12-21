@@ -16,14 +16,14 @@ namespace FreelanceWebServer.Services.JWT
             _tokenGenerator = tokenGenerator;
         }
 
-        public string Generate(User user)
+        public string Generate(User user, string roleName)
         {
             var accessTokenConfig = _configuration.GetSection("Authentication");
 
             List<Claim> claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Username)
+                new Claim(ClaimsIdentity.DefaultNameClaimType, user.Id.ToString()),
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, roleName)
             };
 
             var token = _tokenGenerator.Generate(
