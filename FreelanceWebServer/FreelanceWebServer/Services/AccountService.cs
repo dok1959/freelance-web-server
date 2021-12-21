@@ -45,7 +45,7 @@ namespace FreelanceWebServer.Services
         {
             var user = _mapper.Map<User>(model);
             user.HashedPassword = _passwordHasher.Hash(model.Password);
-            user.Role = Role.User;
+            user.RoleId = 2; // User role
             await _userRepository.Add(user);
         }
 
