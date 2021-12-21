@@ -6,7 +6,9 @@ using AutoMapper;
 using FreelanceWebServer.Repositories;
 using FreelanceWebServer.Models;
 using System.Threading.Tasks;
-using FreelanceWebServer.Models.DTO.Market;
+using FreelanceWebServer.DTO.Market;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 
 namespace FreelanceWebServer.Controllers
 {
@@ -25,6 +27,7 @@ namespace FreelanceWebServer.Controllers
             _userRepository = userRepository;
         }
 
+        #region CRUD operations
         /// <summary>
         /// Get all orders
         /// </summary>
@@ -38,8 +41,8 @@ namespace FreelanceWebServer.Controllers
 
             foreach (var order in orders)
             {
-                /*var ContractorFullName = _userRepository.GetById(order.CustomerId);
-                var CustomerFullName = _userRepository.GetById(order.CustomerId);*/
+                /*var ContractorFullName = _userRepository.GetById(order.CustomerId);*/
+                var customer = await _userRepository.Get(order.CustomerId);
 
 
                 var orderShowingDTO = new OrderShowingDTO
@@ -50,7 +53,7 @@ namespace FreelanceWebServer.Controllers
                     ContractorId = order.ContractorId,
                     //ContractorFullName = $"{employee.Surname} {employee.Name}"
                     CustomerId = order.CustomerId,
-                    //CustomerFullName = $"{customer.Surname} {customer.Name}",
+                    CustomerFullName = $"{customer.Surname} {customer.Name}",
                     Info = new List<object>(),
                     Cost = order.Cost,
                     Deadline = order.Deadline,
@@ -76,8 +79,8 @@ namespace FreelanceWebServer.Controllers
             if (order == null)
                 return BadRequest("Order with this id not found in database");
 
-            /*var ContractorFullName = _userRepository.GetById(order.CustomerId);
-            var CustomerFullName = _userRepository.GetById(order.CustomerId);*/
+            /*var ContractorFullName = _userRepository.GetById(order.CustomerId);*/
+            var customer = await _userRepository.Get(order.CustomerId);
 
             var orderShowingDTO = new OrderShowingDTO
             {
@@ -87,7 +90,7 @@ namespace FreelanceWebServer.Controllers
                 ContractorId = order.ContractorId,
                 //ContractorFullName = $"{employee.Surname} {employee.Name}"
                 CustomerId = order.CustomerId,
-                //CustomerFullName = $"{customer.Surname} {customer.Name}",
+                CustomerFullName = $"{customer.Surname} {customer.Name}",
                 Info = new List<object>(),
                 Cost = order.Cost,
                 Deadline = order.Deadline,
@@ -101,18 +104,20 @@ namespace FreelanceWebServer.Controllers
         /// Add order
         /// </summary>
         /// <param name="model">CreateOrder DTO</param>
-        //[Authorize]
         [HttpPost]
+        [Authorize(Roles = "user")]
         public async Task<IActionResult> Post([FromBody] OrderCreatingDTO model)
         {
             if (!ModelState.IsValid)
                 return BadRequest($"Errors count when validating fileds {ModelState.ErrorCount}");
 
+            var userId = GetUserIdFromToken();
+
             var order = new Order
             {
                 Title = model.Title,
                 Description = model.Description,
-                CustomerId = 0,
+                CustomerId = userId,
                 InfoId = 0,
                 Cost = model.Cost,
                 Deadline = model.Deadline,
@@ -128,8 +133,8 @@ namespace FreelanceWebServer.Controllers
         /// Update order
         /// </summary>
         /// <param name="model">UpdateOrder DTO</param>
-        //[Authorize]
         [HttpPut]
+        [Authorize(Roles = "user")]
         public async Task<IActionResult> Put([FromBody] OrderUpdatingDTO model)
         {
             var order = new Order
@@ -152,13 +157,35 @@ namespace FreelanceWebServer.Controllers
         /// Delete order
         /// </summary>
         /// <param name="id">Order id</param>
-        //[Authorize]
         [HttpDelete("{id}")]
+        [Authorize(Roles = "user, moderator")]
         public async Task<IActionResult> Delete(long id)
         {
             await _orderRepository.Delete(id);
-
             return Ok();
+        }
+        #endregion
+
+
+        /// <summary>
+        /// Respond to order
+        /// </summary>
+        [HttpGet("{id}/respond")]
+        [Authorize(Roles = "user")]
+        public IActionResult Respond() => Ok();
+
+        /// <summary>
+        /// Refuse order response
+        /// </summary>
+        [HttpGet("{id}/refuse")]
+        [Authorize(Roles = "user")]
+        public IActionResult Refuse() => Ok();
+    
+        private long GetUserIdFromToken()
+        {
+            var token = HttpContext.Request.Headers["Authorization"].ToString().Split(" ").Last();
+            var claims = new JwtSecurityTokenHandler().ReadJwtToken(token).Claims.ToArray();
+            return long.Parse(claims.First().Value);
         }
     }
 }

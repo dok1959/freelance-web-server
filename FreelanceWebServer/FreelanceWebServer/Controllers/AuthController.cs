@@ -6,6 +6,8 @@ using FreelanceWebServer.Services;
 using FreelanceWebServer.Services.JWT;
 using FreelanceWebServer.Repositories;
 using FreelanceWebServer.Models.DTO.Account;
+using Microsoft.AspNetCore.Authorization;
+using FreelanceWebServer.Repositories.UserRepository;
 
 namespace FreelanceWebServer.Controllers
 {
@@ -18,6 +20,7 @@ namespace FreelanceWebServer.Controllers
     {
         private readonly IAccountService _accountService;
         private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
         private readonly AccessTokenGenerator _accessTokenGenerator;
         private readonly RefreshTokenGenerator _refreshTokenGenerator;
         private readonly RefreshTokenValidator _refreshTokenValidator;
@@ -25,12 +28,14 @@ namespace FreelanceWebServer.Controllers
         public AuthController(
             IAccountService accountService,
             IUserRepository userRepository,
+            IRoleRepository roleRepository,
             AccessTokenGenerator accessTokenGenerator,
             RefreshTokenGenerator refreshTokenGenerator,
             RefreshTokenValidator refreshTokenValidator) 
         { 
             _accountService = accountService;
             _userRepository = userRepository;
+            _roleRepository = roleRepository;
             _accessTokenGenerator = accessTokenGenerator;
             _refreshTokenGenerator = refreshTokenGenerator;
             _refreshTokenValidator = refreshTokenValidator;
@@ -52,15 +57,18 @@ namespace FreelanceWebServer.Controllers
 
             User user = await _accountService.Authenticate(model);
 
+
             if(user == null)
                 return BadRequest("Wrong user credentials");
+
+            Role role = await _roleRepository.Get(user.RoleId);
 
             var generatedToken = _refreshTokenGenerator.Generate();
             await _userRepository.UpdateRefreshToken(user.Id, generatedToken);
 
             return Ok(new UserTokensDTO 
             { 
-                AccessToken = _accessTokenGenerator.Generate(user),
+                AccessToken = _accessTokenGenerator.Generate(user, role.Name),
                 RefreshToken = generatedToken
             });
         }
@@ -117,14 +125,23 @@ namespace FreelanceWebServer.Controllers
                 return BadRequest(new { errorMessage = "User with this token not found" });
             }
 
+            Role role = await _roleRepository.Get(user.RoleId);
+
             var generatedToken = _refreshTokenGenerator.Generate();
             await _userRepository.UpdateRefreshToken(user.Id, generatedToken);
 
             return Ok(new UserTokensDTO
             {
-                AccessToken = _accessTokenGenerator.Generate(user),
+                AccessToken = _accessTokenGenerator.Generate(user, role.Name),
                 RefreshToken = generatedToken
             });
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpGet("getString")]
+        public IActionResult GetString()
+        {
+            return Ok("You are user");
         }
     }
 }
