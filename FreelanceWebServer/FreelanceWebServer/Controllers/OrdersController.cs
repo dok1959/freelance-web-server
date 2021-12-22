@@ -41,9 +41,7 @@ namespace FreelanceWebServer.Controllers
 
             foreach (var order in orders)
             {
-                /*var ContractorFullName = _userRepository.GetById(order.CustomerId);*/
                 var customer = await _userRepository.Get(order.CustomerId);
-
 
                 var orderShowingDTO = new OrderShowingDTO
                 {
@@ -51,7 +49,6 @@ namespace FreelanceWebServer.Controllers
                     Title = order.Title,
                     Description = order.Description,
                     ContractorId = order.ContractorId,
-                    //ContractorFullName = $"{employee.Surname} {employee.Name}"
                     CustomerId = order.CustomerId,
                     CustomerFullName = $"{customer.Surname} {customer.Name}",
                     Info = new List<object>(),
@@ -59,6 +56,13 @@ namespace FreelanceWebServer.Controllers
                     Deadline = order.Deadline,
                     SpecialId = order.SpecialId
                 };
+
+                if (order.ContractorId.HasValue)
+                {
+                    var contractor = await _userRepository.Get(order.ContractorId.Value);
+                    orderShowingDTO.ContractorFullName = $"{contractor.Surname} {contractor.Name}";
+                }
+                    
 
                 orderShowingDTOs.Add(orderShowingDTO);
             }
@@ -79,7 +83,6 @@ namespace FreelanceWebServer.Controllers
             if (order == null)
                 return BadRequest("Order with this id not found in database");
 
-            /*var ContractorFullName = _userRepository.GetById(order.CustomerId);*/
             var customer = await _userRepository.Get(order.CustomerId);
 
             var orderShowingDTO = new OrderShowingDTO
@@ -88,7 +91,6 @@ namespace FreelanceWebServer.Controllers
                 Title = order.Title,
                 Description = order.Description,
                 ContractorId = order.ContractorId,
-                //ContractorFullName = $"{employee.Surname} {employee.Name}"
                 CustomerId = order.CustomerId,
                 CustomerFullName = $"{customer.Surname} {customer.Name}",
                 Info = new List<object>(),
@@ -96,6 +98,12 @@ namespace FreelanceWebServer.Controllers
                 Deadline = order.Deadline,
                 SpecialId = order.SpecialId
             };
+
+            if (order.ContractorId.HasValue)
+            {
+                var contractor = await _userRepository.Get(order.ContractorId.Value);
+                orderShowingDTO.ContractorFullName = $"{contractor.Surname} {contractor.Name}";
+            }
 
             return Ok(orderShowingDTO);
         }
@@ -166,20 +174,54 @@ namespace FreelanceWebServer.Controllers
         }
         #endregion
 
-
         /// <summary>
         /// Respond to order
         /// </summary>
-        [HttpGet("{id}/respond")]
+        /// <param name="id">order id</param>
+        /// <returns></returns>
+        [HttpPost("{id}/respond")]
         [Authorize(Roles = "user")]
-        public IActionResult Respond() => Ok();
+        public async Task<IActionResult> Respond(long id)
+        {
+            var userId = GetUserIdFromToken();
+
+            var order = await _orderRepository.Get(id);
+
+            if (order.CustomerId == userId)
+                return BadRequest("Cannot respond to your order");
+
+            order.ContractorId = userId;
+
+            await _orderRepository.Update(order);
+
+            return Ok();
+        }
 
         /// <summary>
         /// Refuse order response
         /// </summary>
-        [HttpGet("{id}/refuse")]
+        /// <param name="id">order id</param>
+        /// <returns></returns>
+        [HttpPost("{id}/refuse")]
         [Authorize(Roles = "user")]
-        public IActionResult Refuse() => Ok();
+        public async Task<IActionResult> Refuse(long id)
+        {
+            var userId = GetUserIdFromToken();
+
+            var order = await _orderRepository.Get(id);
+
+            if (order.CustomerId == userId)
+                return BadRequest("Cannot refuse to your order");
+
+            if (order.ContractorId != userId)
+                return BadRequest("Cannot reject someone else's order");
+
+            order.ContractorId = null;
+
+            await _orderRepository.Update(order);
+
+            return Ok();
+        }
     
         private long GetUserIdFromToken()
         {
